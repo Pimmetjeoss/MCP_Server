@@ -10,16 +10,6 @@ Het probleem oplost van **veilige database toegang** - AI applicaties kunnen que
 
 **Edge deployment betekent** dat je database gateway wereldwijd beschikbaar is met lage latency. **Automatische schema detectie** zorgt ervoor dat AI tools direct begrijpen hoe jouw database in elkaar steekt.
 
-## Wat kun je ermee doen?
-
-Na maanden van gebruik zijn dit de scenario's waar ik het voor inzet:
-
-**Data analyse met AI**: Claude kan nu rechtstreeks mijn verkoop data analyseren zonder dat ik CSV's hoef te exporteren. Gewoon vragen "Wat zijn de trends van afgelopen kwartaal?" en het haalt direct de juiste data op.
-
-**Database onderhoud**: In plaats van inloggen op de database server, vraag ik Claude om bijvoorbeeld oude test data op te ruimen of rapporten te genereren.
-
-**Team onboarding**: Nieuwe teamleden kunnen via Claude de database structuur verkennen en voorbeeldqueries zien zonder dat ze direct database toegang nodig hebben.
-
 ## Je eerste implementatie
 
 ### Wat heb je nodig?

@@ -1,230 +1,101 @@
-# MCP Server with PostgreSQL Database Integration
+# Cloudflare Remote PostgreSQL Database MCP Server + GitHub OAuth
 
-A Model Context Protocol (MCP) server implementation that provides secure database access through GitHub OAuth authentication, deployed on Cloudflare Workers.
+This is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) server that enables you to **chat with your PostgreSQL database**, deployable as a remote MCP server with GitHub OAuth through Cloudflare. This is production ready MCP.
 
-## 🔧 Features
+## Key Features
 
-- **PostgreSQL Database Integration**: Secure database operations with connection pooling
-- **GitHub OAuth Authentication**: User authentication and authorization
-- **Cloudflare Workers Deployment**: Serverless deployment with Durable Objects
-- **MCP Protocol Support**: Compatible with Model Context Protocol specifications
-- **Role-based Access Control**: Different permission levels based on authenticated users
-- **Error Monitoring**: Integrated Sentry error tracking
-- **TypeScript**: Full type safety and modern development experience
+- **🗄️ Database Integration with Lifespan**: Direct PostgreSQL database connection for all MCP tool calls
+- **🛠️ Modular, Single Purpose Tools**: Following best practices around MCP tools and their descriptions
+- **🔐 Role-Based Access**: GitHub username-based permissions for database write operations
+- **📊 Schema Discovery**: Automatic table and column information retrieval
+- **🛡️ SQL Injection Protection**: Built-in validation and sanitization
+- **📈 Monitoring**: Optional Sentry integration for production monitoring
+- **☁️ Cloud Native**: Powered by [Cloudflare Workers](https://developers.cloudflare.com/workers/) for global scale
 
-## 🏗️ Architecture
+## Modular Architecture
 
-The server is built using:
+This MCP server uses a clean, modular architecture that makes it easy to extend and maintain:
 
-- **[Model Context Protocol (MCP)](https://modelcontextprotocol.org/)**: For standardized AI-to-tool communication
-- **[Cloudflare Workers](https://workers.cloudflare.com/)**: Serverless compute platform
-- **[Durable Objects](https://developers.cloudflare.com/durable-objects/)**: Stateful serverless objects for MCP sessions
-- **[PostgreSQL](https://www.postgresql.org/)**: Primary database
-- **[GitHub OAuth](https://docs.github.com/en/apps/oauth-apps)**: Authentication provider
-- **[Hono](https://hono.dev/)**: Lightweight web framework
+- **`src/tools/`** - Individual tool implementations in separate files
+- **`registerAllTools()`** - Centralized tool registration system 
+- **Extensible Design** - Add new tools by creating files in `tools/` and registering them
 
-## 📁 Project Structure
+This architecture allows you to easily add new database operations, external API integrations, or any other MCP tools while keeping the codebase organized and maintainable.
 
-```
-src/
-├── auth/                 # Authentication handlers
-├── database/            # Database connection and utilities
-├── tools/               # MCP tool implementations
-│   ├── database-tools.ts
-│   ├── database-tools-sentry.ts
-│   └── register-tools.ts
-├── index.ts             # Main server entry point
-├── types.ts             # TypeScript type definitions
-└── simple-math.ts       # Example MCP tool
-```
+## Transport Protocols
 
-## 🚀 Getting Started
+This MCP server supports both modern and legacy transport protocols:
 
-### Prerequisites
+- **`/mcp` - Streamable HTTP** (recommended): Uses a single endpoint with bidirectional communication, automatic connection upgrades, and better resilience for network interruptions
+- **`/sse` - Server-Sent Events** (legacy): Uses separate endpoints for requests/responses, maintained for backward compatibility
 
-- Node.js 18+
-- Docker and Docker Compose
-- Cloudflare account
-- GitHub OAuth App
-- PostgreSQL database (local or remote)
+For new implementations, use the `/mcp` endpoint as it provides better performance and reliability.
 
-### Local Development Setup
+## How It Works
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Pimmetjeoss/MCP_Server.git
-   cd MCP_Server
-   ```
+The MCP server provides three main tools for database interaction:
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+1. **`listTables`** - Get database schema and table information (all authenticated users)
+2. **`queryDatabase`** - Execute read-only SQL queries (all authenticated users)  
+3. **`executeDatabase`** - Execute write operations like INSERT/UPDATE/DELETE (privileged users only)
 
-3. **Start local PostgreSQL database**
-   ```bash
-   docker-compose up -d
-   ```
+**Authentication Flow**: Users authenticate via GitHub OAuth → Server validates permissions → Tools become available based on user's GitHub username.
 
-4. **Set up the database**
-   ```bash
-   chmod +x setup-database.sh
-   ./setup-database.sh
-   ```
+**Security Model**: 
+- All authenticated GitHub users can read data
+- Only specific GitHub usernames can write/modify data
+- SQL injection protection and query validation built-in
 
-5. **Configure environment variables**
-   Create a `.env` file or set up Cloudflare secrets:
-   ```
-   DATABASE_URL=postgresql://mcp_user:mcp_password@localhost:5432/mcp_database
-   GITHUB_CLIENT_ID=your_github_client_id
-   GITHUB_CLIENT_SECRET=your_github_client_secret
-   SENTRY_DSN=your_sentry_dsn (optional)
-   ```
+## Simple Example First
 
-6. **Start development server**
-   ```bash
-   npm run dev
-   ```
+Want to see a basic MCP server before diving into the full database implementation? Check out `src/simple-math.ts` - a minimal MCP server with a single `calculate` tool that performs basic math operations (add, subtract, multiply, divide). This example demonstrates the core MCP components: server setup, tool definition with Zod schemas, and dual transport support (`/mcp` and `/sse` endpoints). You can run it locally with `wrangler dev --config wrangler-simple.jsonc` and test at `http://localhost:8789/mcp`.
 
-The server will be available at `http://localhost:8792`
+## Prerequisites
 
-### GitHub OAuth Setup
+- Node.js installed on your machine
+- A Cloudflare account (free tier works)
+- A GitHub account for OAuth setup
+- A PostgreSQL database (local or hosted)
 
-1. Create a new GitHub OAuth App at https://github.com/settings/applications/new
-2. Set the Authorization callback URL to: `https://your-worker-domain.workers.dev/callback`
-3. Note the Client ID and Client Secret for configuration
+## Getting Started
 
-## 🛠️ Available Tools
+### Step 1: Install Wrangler CLI
 
-The MCP server provides the following tools:
-
-### Database Tools
-
-- **`listTables`**: Get all tables and their schema information
-- **`queryDatabase`**: Execute read-only SQL queries (SELECT statements)
-- **`executeDatabase`**: Execute write operations (INSERT, UPDATE, DELETE) - restricted access
-
-### Authentication & Authorization
-
-Access to tools is controlled based on GitHub user authentication:
-
-- **Public access**: `listTables`, `queryDatabase`
-- **Restricted access**: `executeDatabase` (specific GitHub users only)
-
-## 📦 Deployment
-
-### Cloudflare Workers
-
-1. **Configure wrangler.jsonc**
-   Update the configuration with your specific settings:
-   ```jsonc
-   {
-     "name": "your-mcp-server",
-     "main": "src/index.ts",
-     // ... other configurations
-   }
-   ```
-
-2. **Set up secrets**
-   ```bash
-   wrangler secret put DATABASE_URL
-   wrangler secret put GITHUB_CLIENT_ID
-   wrangler secret put GITHUB_CLIENT_SECRET
-   ```
-
-3. **Deploy to Cloudflare**
-   ```bash
-   npm run deploy
-   ```
-
-### Database Deployment
-
-For production, use a managed PostgreSQL service like:
-- [Neon](https://neon.tech/)
-- [Supabase](https://supabase.com/)
-- [AWS RDS](https://aws.amazon.com/rds/)
-- [Google Cloud SQL](https://cloud.google.com/sql)
-
-## 🧪 Testing
-
-Run the test suite:
+Install Wrangler globally to manage your Cloudflare Workers:
 
 ```bash
-npm test           # Run tests
-npm run test:ui    # Run tests with UI
-npm run test:run   # Run tests once
+npm install -g wrangler
 ```
 
-## 📝 Development Scripts
+### Step 2: Authenticate with Cloudflare
 
-- `npm run dev` - Start development server
-- `npm run deploy` - Deploy to Cloudflare Workers
-- `npm run type-check` - Run TypeScript type checking
-- `npm run cf-typegen` - Generate Cloudflare Worker types
+Log in to your Cloudflare account:
 
-## 🔒 Security Considerations
-
-- All database operations are parameterized to prevent SQL injection
-- GitHub OAuth provides secure authentication
-- Write operations are restricted to authorized users only
-- Connection pooling prevents database connection exhaustion
-- Sentry integration for error monitoring and alerting
-
-## 🐛 Error Handling
-
-The server includes comprehensive error handling:
-
-- Database connection errors
-- Authentication failures
-- Invalid SQL queries
-- Permission denied scenarios
-- Automatic retry logic for transient failures
-
-## 📚 MCP Integration
-
-This server implements the Model Context Protocol, making it compatible with:
-
-- Claude Desktop
-- MCP-compatible applications
-- Custom MCP clients
-
-### Connection Configuration
-
-To connect from an MCP client, use:
-```json
-{
-  "name": "database-server",
-  "command": "npx",
-  "args": ["@your-org/mcp-server"],
-  "env": {
-    "DATABASE_URL": "your-database-url"
-  }
-}
+```bash
+wrangler login
 ```
 
-## 🤝 Contributing
+This will open a browser window where you can authenticate with your Cloudflare account.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Step 3: Clone and Setup
 
-## 📄 License
+Clone the repo directly & install dependencies: 
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+```bash
+git clone https://github.com/Pimmetjeoss/MCP_Server.git
+cd MCP_Server
+npm install
+```
 
-## 🆘 Support
+## Environment Variables Setup
 
-If you encounter any issues or have questions:
+Before running the MCP server, you need to configure several environment variables for authentication and database access.
 
-1. Check the [Issues](https://github.com/Pimmetjeoss/MCP_Server/issues) page
-2. Create a new issue with detailed information
-3. Include error logs and reproduction steps
+### Create Environment Variables File
 
-## 🔗 Related Links
+1. **Create your `.dev.vars` file** from the example:
+   ```bash
+   cp .dev.vars.example .dev.vars
+   ```
 
-- [Model Context Protocol Documentation](https://modelcontextprotocol.org/)
-- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-- [GitHub OAuth Documentation](https://docs.github.com/en/apps/oauth-apps)
+2. **Configure all required environment variables** in `.

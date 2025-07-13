@@ -1,4 +1,4 @@
-import { init, instrument } from "@sentry/cloudflare";
+import * as Sentry from "@sentry/cloudflare";
 import OAuthProvider from "@cloudflare/workers-oauth-provider";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { McpAgent } from "agents/mcp";
@@ -14,8 +14,6 @@ function getSentryConfig(env: Env) {
 		dsn: (env as any).SENTRY_DSN,
 		// A sample rate of 1.0 means "capture all traces"
 		tracesSampleRate: 1,
-		// Add environment context
-		environment: (env as any).NODE_ENV || 'development',
 	};
 }
 
@@ -48,10 +46,8 @@ export class MyMCP extends McpAgent<Env, Record<string, never>, Props> {
 		// Initialize Sentry
 		const sentryConfig = getSentryConfig(this.env);
 		if (sentryConfig.dsn) {
-			console.log('Initializing Sentry with DSN:', sentryConfig.dsn.substring(0, 20) + '...');
-			init(sentryConfig);
-		} else {
-			console.log('Sentry DSN not found, skipping Sentry initialization');
+			// @ts-ignore - Sentry.init exists but types may not be complete
+			Sentry.init(sentryConfig);
 		}
 
 		// Register all tools with Sentry instrumentation
@@ -59,16 +55,13 @@ export class MyMCP extends McpAgent<Env, Record<string, never>, Props> {
 	}
 }
 
-// Instrument the worker with Sentry
-export default instrument(
-	new OAuthProvider({
-		apiHandlers: {
-			'/sse': MyMCP.serveSSE('/sse') as any,
-			'/mcp': MyMCP.serve('/mcp') as any,
-		},
-		authorizeEndpoint: "/authorize",
-		clientRegistrationEndpoint: "/register",
-		defaultHandler: GitHubHandler as any,
-		tokenEndpoint: "/token",
-	})
-);
+export default new OAuthProvider({
+	apiHandlers: {
+		'/sse': MyMCP.serveSSE('/sse') as any,
+		'/mcp': MyMCP.serve('/mcp') as any,
+	},
+	authorizeEndpoint: "/authorize",
+	clientRegistrationEndpoint: "/register",
+	defaultHandler: GitHubHandler as any,
+	tokenEndpoint: "/token",
+});

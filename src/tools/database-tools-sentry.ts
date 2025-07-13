@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/cloudflare";
+import { captureException, setUser, startNewTrace, startSpan } from "@sentry/cloudflare";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { 
 	Props, 
@@ -19,7 +19,7 @@ const ALLOWED_USERNAMES = new Set<string>([
 
 // Error handling helper for MCP tools with Sentry
 function handleError(error: unknown): { content: Array<{ type: "text"; text: string; isError?: boolean }> } {
-	const eventId = Sentry.captureException(error);
+	const eventId = captureException(error);
 
 	const errorMessage = [
 		"**Error**",
@@ -51,8 +51,8 @@ export function registerDatabaseToolsWithSentry(server: McpServer, env: Env, pro
 		"Get a list of all tables in the database along with their column information. Use this first to understand the database structure before querying.",
 		ListTablesSchema,
 		async () => {
-			return await Sentry.startNewTrace(async () => {
-				return await Sentry.startSpan({
+			return await startNewTrace(async () => {
+				return await startSpan({
 					name: "mcp.tool/listTables",
 					attributes: {
 						'mcp.tool.name': 'listTables',
@@ -60,7 +60,7 @@ export function registerDatabaseToolsWithSentry(server: McpServer, env: Env, pro
 					},
 				}, async (span) => {
 					// Set user context
-					Sentry.setUser({
+					setUser({
 						username: props.login,
 						email: props.email,
 					});
@@ -126,8 +126,8 @@ export function registerDatabaseToolsWithSentry(server: McpServer, env: Env, pro
 		"Execute a read-only SQL query against the PostgreSQL database. This tool only allows SELECT statements and other read operations. All authenticated users can use this tool.",
 		QueryDatabaseSchema,
 		async ({ sql }) => {
-			return await Sentry.startNewTrace(async () => {
-				return await Sentry.startSpan({
+			return await startNewTrace(async () => {
+				return await startSpan({
 					name: "mcp.tool/queryDatabase",
 					attributes: {
 						'mcp.tool.name': 'queryDatabase',
@@ -136,7 +136,7 @@ export function registerDatabaseToolsWithSentry(server: McpServer, env: Env, pro
 					},
 				}, async (span) => {
 					// Set user context
-					Sentry.setUser({
+					setUser({
 						username: props.login,
 						email: props.email,
 					});
@@ -184,8 +184,8 @@ export function registerDatabaseToolsWithSentry(server: McpServer, env: Env, pro
 			"Execute any SQL statement against the PostgreSQL database, including INSERT, UPDATE, DELETE, and DDL operations. This tool is restricted to specific GitHub users and can perform write transactions. **USE WITH CAUTION** - this can modify or delete data.",
 			ExecuteDatabaseSchema,
 			async ({ sql }) => {
-				return await Sentry.startNewTrace(async () => {
-					return await Sentry.startSpan({
+				return await startNewTrace(async () => {
+					return await startSpan({
 						name: "mcp.tool/executeDatabase",
 						attributes: {
 							'mcp.tool.name': 'executeDatabase',
@@ -195,7 +195,7 @@ export function registerDatabaseToolsWithSentry(server: McpServer, env: Env, pro
 						},
 					}, async (span) => {
 						// Set user context
-						Sentry.setUser({
+						setUser({
 							username: props.login,
 							email: props.email,
 						});

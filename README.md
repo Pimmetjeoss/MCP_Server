@@ -4,9 +4,9 @@ Tijdens mijn experimenten met Model Context Protocol servers kwam ik tegen het p
 
 ## Waarom deze database gateway?
 
-Toen ik begon met MCP servers merkte ik dat er geen goede manier was om AI tools veilig met databases te laten werken. De meeste oplossingen waren of te simpel (alleen read-only) of te gevaarlijk (geen toegangscontrole). Daarom bouwde ik deze gateway die:
+Toen ik begon met MCP servers merkte ik dat er geen goede manier was om AI tools veilig met databases te laten werken. De meeste oplossingen waren of te simpel (alleen read-only) of geen toegangscontrole. Daarom bouwde ik deze gateway die:
 
-Het probleem oplost van **veilige database toegang** - AI applicaties kunnen queries uitvoeren maar alleen gebruikers die je vertrouwt kunnen data aanpassen. De **GitHub integratie zorgt ervoor** dat je precies kunt bepalen wie wat mag doen zonder ingewikkelde configuratie.
+Het probleem oplost van **veilige database toegang** - AI applicaties kunnen queries uitvoeren maar alleen gebruikers die je vertrouwt kunnen data aanpassen. De **GitHub integratie zorgt ervoor** dat je precies kunt bepalen wie wat mag doen zonder ingewikkelde configuratie. Daarnaast kun je dit makkelijk voor een divers team uitbreiden en beheren.
 
 **Edge deployment betekent** dat je database gateway wereldwijd beschikbaar is met lage latency. **Automatische schema detectie** zorgt ervoor dat AI tools direct begrijpen hoe jouw database in elkaar steekt.
 

@@ -1,6 +1,6 @@
 # Database Gateway voor AI Applicaties
 
-Tijdens mijn experimenten met Model Context Protocol servers kwam ik tegen het probleem dat ik AI applicaties wilde laten praten met mijn PostgreSQL databases. Na veel uitproberen heb ik deze oplossing gebouwd die draait op Cloudflare's edge netwerk en GitHub gebruikt voor toegangsbeheer.
+Tijdens het spelen met Model Context Protocol servers wilde ik zelf eens een MCP server maken. Na veel uitproberen heb ik deze oplossing gebouwd die draait op Cloudflare's edge netwerk en GitHub gebruikt voor toegangsbeheer.
 
 ## Waarom deze database gateway?
 

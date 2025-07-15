@@ -5,12 +5,16 @@ import { Props } from "./types";
 import { GitHubHandler } from "./auth/github-handler";
 import { closeDb } from "./database/connection";
 import { registerAllTools } from "./tools/register-tools";
+import { SequentialThinkingState } from "./tools/sequential-thinking-tool";
 
 export class MyMCP extends McpAgent<Env, Record<string, never>, Props> {
 	server = new McpServer({
-		name: "PostgreSQL Database MCP Server",
-		version: "1.0.0",
+		name: "PostgreSQL Database & Sequential Thinking MCP Server",
+		version: "1.1.0",
 	});
+
+	// Add state for sequential thinking
+	private thinkingState = new SequentialThinkingState();
 
 	/**
 	 * Cleanup database connections when Durable Object is shutting down
@@ -32,8 +36,8 @@ export class MyMCP extends McpAgent<Env, Record<string, never>, Props> {
 	}
 
 	async init() {
-		// Register all tools based on user permissions
-		registerAllTools(this.server, this.env, this.props);
+		// Register all tools based on user permissions, including thinking state
+		registerAllTools(this.server, this.env, this.props, this.thinkingState);
 	}
 }
 

@@ -1,0 +1,31 @@
+# MCP Server met Database, Web Scraping, Email & AI Tools
+
+Een productie-klare MCP server voor Cloudflare Workers met OAuth authenticatie.
+
+## Tools beschikbaar
+- Database: PostgreSQL queries (read/write met permissies)
+- Email: Microsoft Graph API integratie  
+- Web Scraping: Firecrawl met retry logic
+- Sequential Thinking: AI-assisted problem solving
+
+## Installatie
+1. Clone repository
+2. npm install
+3. wrangler login
+4. Setup GitHub OAuth + Azure App Registration
+5. Configure .dev.vars met credentials
+6. wrangler dev voor lokaal testen
+
+## Authenticatie
+- GitHub OAuth voor MCP toegang
+- Microsoft OAuth voor email functionaliteit
+- Database write access via username whitelist
+
+## Deployment
+Cloudflare Workers met KV storage voor sessions.
+
+## API Endpoints
+- /mcp - MCP protocol endpoint
+- /callback - GitHub OAuth callback
+- /microsoft/authorize - Microsoft OAuth setup
+- /microsoft/callback - Microsoft OAuth callback
